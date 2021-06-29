@@ -17,3 +17,7 @@
 /log4j2.debug.xml
 /jwt.jks
 /ssl.jks
+/arces143100.arces.unibo.it-selfsigned.jks
+/arces143100.arces.unibo.it.jks
+/endpoint-virtuoso-arces143100.jpar
+/engine-secure-arces143100.jpar
