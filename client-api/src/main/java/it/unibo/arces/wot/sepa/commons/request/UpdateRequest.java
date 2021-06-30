@@ -20,7 +20,7 @@ package it.unibo.arces.wot.sepa.commons.request;
 
 import java.util.Set;
 
-import it.unibo.arces.wot.sepa.commons.protocol.SPARQL11Properties.HTTPMethod;
+import it.unibo.arces.wot.sepa.commons.protocol.SPARQL11Properties.UpdateHTTPMethod;
 
 /**
  * This class represents the request to perform a SPARQL 1.1 Update
@@ -32,7 +32,11 @@ public class UpdateRequest extends SPARQL11Request {
 	 * that contains an operation that uses the USING, USING NAMED, or WITH clause.
 	 */
 	
-	public UpdateRequest(HTTPMethod method,String scheme,String host, int port, String path,String sparql,Set<String> default_graph_uri,Set<String> named_graph_uri,String authorization,long timeout,long nRetry) {
+	private boolean urlEncodedGraphsPatch = false;
+	
+	private UpdateHTTPMethod method;
+	
+	public UpdateRequest(UpdateHTTPMethod method,String scheme,String host, int port, String path,String sparql,Set<String> default_graph_uri,Set<String> named_graph_uri,String authorization,long timeout,long nRetry) {
 		super(sparql,authorization,default_graph_uri,named_graph_uri,timeout,nRetry);
 		
 		this.method = method;
@@ -42,7 +46,7 @@ public class UpdateRequest extends SPARQL11Request {
 		this.scheme = scheme;
 	}
 	
-	public UpdateRequest(HTTPMethod method,String scheme,String host, int port, String path,String sparql,Set<String> default_graph_uri,Set<String> named_graph_uri,String authorization) {
+	public UpdateRequest(UpdateHTTPMethod method,String scheme,String host, int port, String path,String sparql,Set<String> default_graph_uri,Set<String> named_graph_uri,String authorization) {
 		super(sparql,authorization,default_graph_uri,named_graph_uri);
 		
 		this.method = method;
@@ -73,5 +77,13 @@ public class UpdateRequest extends SPARQL11Request {
 	public boolean equals(Object obj) {
 		if (!(obj instanceof UpdateRequest)) return false;
 		return sparql.equals(((UpdateRequest)obj).sparql);
+	}
+	
+	public UpdateHTTPMethod getHttpMethod() {
+		return method;
+	}
+
+	public boolean urlEncodedGraphsPatch() {
+		return urlEncodedGraphsPatch;
 	}
 }

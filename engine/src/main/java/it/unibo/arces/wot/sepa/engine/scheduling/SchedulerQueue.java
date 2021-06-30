@@ -44,10 +44,28 @@ class SchedulerQueue {
 	// Responses
 	private final static LinkedBlockingQueue<ScheduledResponse> responses = new LinkedBlockingQueue<ScheduledResponse>();
 
-	public SchedulerQueue(long size) {
+	private int size = 0;
+	
+	public SchedulerQueue(int size) {
 		// Initialize token jar
 		for (int i = 0; i < size; i++)
-			tokens.addElement(i);	
+			tokens.addElement(i);
+		
+		this.size = size;
+	}
+	
+	public synchronized void setSize(int n) {
+		if (n > size) {
+			for (int i = size; i < size + (size-n);i++) {
+				tokens.addElement(i);
+			}
+			size = n;
+		}
+		else if (n < size) {
+			if (size == tokens.size()) {
+				for (int i=0 ; i < (size-n);i++ ) tokens.removeElementAt(0);
+			}
+		}
 	}
 
 	/**

@@ -62,6 +62,8 @@ public class SchedulerBeans {
 		 totalQueryRequests = 0;
 		 totalSubscribeRequests = 0;
 		 totalUnsubscribeRequests = 0;
+		 
+		 queueSize = 100;
 	}
 
 	public static void tokenLeft(int size) {

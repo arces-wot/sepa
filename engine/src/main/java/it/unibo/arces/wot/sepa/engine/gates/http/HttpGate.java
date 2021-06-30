@@ -33,8 +33,7 @@ import it.unibo.arces.wot.sepa.commons.exceptions.SEPAProtocolException;
 import it.unibo.arces.wot.sepa.engine.bean.EngineBeans;
 import it.unibo.arces.wot.sepa.engine.core.EngineProperties;
 
-import it.unibo.arces.wot.sepa.engine.protocol.sparql11.QueryHandler;
-import it.unibo.arces.wot.sepa.engine.protocol.sparql11.UpdateHandler;
+import it.unibo.arces.wot.sepa.engine.protocol.sparql11.SPARQL11Handler;
 import it.unibo.arces.wot.sepa.engine.scheduling.Scheduler;
 
 public class HttpGate {
@@ -51,11 +50,13 @@ public class HttpGate {
 	public HttpGate(EngineProperties properties, Scheduler scheduler) throws SEPAProtocolException {
 		this.properties = properties;
 		this.scheduler = scheduler;
+		
+		SPARQL11Handler handler = new SPARQL11Handler(scheduler,properties.getQueryPath(),properties.getUpdatePath());
 	
 		server = ServerBootstrap.bootstrap().setListenerPort(properties.getHttpPort())
 				.setServerInfo(serverInfo).setIOReactorConfig(config).setExceptionLogger(ExceptionLogger.STD_ERR)
-				.registerHandler(properties.getQueryPath(), new QueryHandler(scheduler))
-				.registerHandler(properties.getUpdatePath(), new UpdateHandler(scheduler))
+				.registerHandler(properties.getQueryPath(), handler)
+				.registerHandler(properties.getUpdatePath(), handler)
 				.registerHandler("/echo", new EchoHandler()).create();
 		
 		try {

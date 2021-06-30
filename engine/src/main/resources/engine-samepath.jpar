@@ -1,0 +1,35 @@
+{
+	"parameters": {
+		"scheduler": {
+			"queueSize": 1000,
+			"timeout": 60000
+		},
+		"processor": {
+			"updateTimeout": 5000,
+			"queryTimeout": 10000,
+			"maxConcurrentRequests": 5
+		},
+		"spu": {
+			"timeout": 5000
+		},
+		"gates": {
+			"security": {
+				"enabled" : false
+			},
+			"ports": {
+				"http": 8000,
+				"ws": 9000,
+				"https": 8443,
+				"wss": 9443
+			},
+			"paths": {
+				"update": "/sparql",
+				"query": "/sparql",
+				"subscribe": "/subscribe",
+				"register": "/oauth/register",
+				"tokenRequest": "/oauth/token",
+				"securePath": "/secure"
+			}
+		}
+	}
+}

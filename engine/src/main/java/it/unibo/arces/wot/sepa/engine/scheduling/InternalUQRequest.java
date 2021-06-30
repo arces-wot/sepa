@@ -23,13 +23,11 @@ import java.time.ZoneOffset;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import it.unibo.arces.wot.sepa.commons.exceptions.SEPASparqlParsingException;
 import it.unibo.arces.wot.sepa.commons.security.ClientAuthorization;
-import it.unibo.arces.wot.sepa.engine.protocol.sparql11.SPARQL11ProtocolException;
 
 /**
  * An internal request has been validated and graph URIs are extracted.
@@ -52,18 +50,19 @@ public abstract class InternalUQRequest extends InternalRequest {
 		
 		this.sparql = evaluateFunctions(sparql);
 		
-		logger.debug("getGraphURIs");
 		rdfDataSet = getGraphURIs(sparql);
-		logger.debug("Graphs: "+ rdfDataSet);
+		logger.debug("getGraphURIs: "+rdfDataSet);
 		
 		if (defaultGraphUri != null) this.defaultGraphUri = defaultGraphUri;
 		if (namedGraphUri != null) this.namedGraphUri = namedGraphUri;
 		
-		if(!this.defaultGraphUri.isEmpty() && !rdfDataSet.isEmpty()) throw new SPARQL11ProtocolException(HttpStatus.SC_BAD_REQUEST,"using-graph-uri conflicts with USING, USING NAMED or WITH");
-		if(!this.namedGraphUri.isEmpty() && !rdfDataSet.isEmpty()) throw new SPARQL11ProtocolException(HttpStatus.SC_BAD_REQUEST,"using-named-graph-uri conflicts with USING, USING NAMED or WITH");
+		//if(!this.defaultGraphUri.isEmpty() && !rdfDataSet.isEmpty()) throw new SPARQL11ProtocolException(HttpStatus.SC_BAD_REQUEST,"using-graph-uri conflicts with USING, USING NAMED or WITH");
+		//if(!this.namedGraphUri.isEmpty() && !rdfDataSet.isEmpty()) throw new SPARQL11ProtocolException(HttpStatus.SC_BAD_REQUEST,"using-named-graph-uri conflicts with USING, USING NAMED or WITH");
 	
 		rdfDataSet.addAll(this.defaultGraphUri);
 		rdfDataSet.addAll(this.namedGraphUri);
+		
+		logger.debug("RDF DATASET: "+ rdfDataSet);
 	}
 	
 	protected abstract Set<String> getGraphURIs(String sparql) throws SEPASparqlParsingException;

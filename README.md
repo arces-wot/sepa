@@ -153,6 +153,47 @@ where
 ### JMX monitoring
 The SEPA engine is also distributed with a default [JMX](http://www.oracle.com/technetwork/articles/java/javamanagement-140525.html) configuration `jmx.properties` (including the `jmxremote.password` and `jmxremote.access` files for password and user grants). Remember to change password file permissions using: `chmod 600 jmxremote.password`. To enable remote JMX, the engine must be run as follows: `java -Dcom.sun.management.config.file=jmx.properties -jar engine-x.y.z.jar`. Using [`jconsole`](http://docs.oracle.com/javase/7/docs/technotes/guides/management/jconsole.html) is possible to monitor and control the most important engine parameters. By default, the port is `5555` and the `root:root` credentials grant full control (read/write).
 
+### Usage
+The SEPA engine can be configured from the command line. Run `java -jar engine-x.y.z.jar -help` for the list of available settings.
+
+`java [JMX] [JVM] [LOG4J] -jar SEPAEngine_X.Y.Z.jar [-help] [-secure=true] [-engine=engine.jpar] [-endpoint=endpoint.jpar] [JKS OPTIONS] [LDAP OPTIONS] [ISQL OPTIONS]`
+
+- `secure` : overwrite the current secure option of engine.jpar
+- `engine` : can be used to specify the JSON configuration parameters for the engine (default: engine.jpar)
+- `endpoint` : can be used to specify the JSON configuration parameters for the endpoint (default: endpoint.jpar)
+- `help` : to print this help
+
+[JMX]
+- `Dcom.sun.management.config.file=jmx.properties` : to enable JMX remote managment
+
+[JVM]
+- `XX:+UseG1GC`
+
+[LOG4J]
+- `Dlog4j.configurationFile=path/to/log4j2.xml`
+
+[JKS OPTIONS]
+- `sslstore` <jks> : JKS for SSL CA      			(default: ssl.jks)
+- `sslpass` <pwd> : password of the JKS        	(default: sepastore)
+- `jwtstore` <jks> : JKS for the JWT key       	(default: jwt.jks)
+- `jwtalias` <alias> : alias for the JWT key   	(default: jwt)
+- `jwtstorepass` <pwd> : password for the JKS  	(default: sepakey)
+- `jwtaliaspass` <pwd> : password for the JWT key  (default: sepakey)
+		
+[LDAP OPTIONS]
+- `ldaphost` <name> : host     		         (default: localhost)
+- `ldapport` <port> : port                      (default: 10389)
+- `ldapdn` <dn> : domain                        (default: dc=sepatest,dc=com)
+- `ldapusersdn` <dn> : domain                   (default: null)
+- `ldapuser` <usr> : username                   (default: null)
+- `ldappwd` <pwd> : password                    (default: null)
+		
+[ISQL OPTIONS]
+- `isqlpath` <path> : location of isql     		 (default: /usr/local/virtuoso-opensource/bin/)
+- `isqlhost` <host> : host of Virtuoso     		 (default: localhost)
+- `isqluser` <user> : user of Virtuoso     		 (default: dba)
+- `isqlpass` <pass> : password of Virtuoso     	 (default: dba)
+
 ## Contributing
 You are very welcome to be part of SEPA community. If you find any bug feel free to open an issue here on GitHub, but also feel free to
 ask any question. For more details check [Contributing guidelines](CONTRIBUTING.md). Besides, if you want to help the SEPA development follow this simple steps:

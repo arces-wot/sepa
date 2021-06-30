@@ -14,8 +14,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.util.EntityUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.Level;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -30,8 +29,6 @@ import it.unibo.arces.wot.sepa.commons.response.Response;
 import it.unibo.arces.wot.sepa.timing.Timings;
 
 public class KeycloakAuthenticationService extends AuthenticationService {
-	private static final Logger logger = LogManager.getLogger();
-
 	String registrationAccessToken;
 
 	public KeycloakAuthenticationService(OAuthProperties oauthProp)
@@ -53,7 +50,7 @@ curl --location --request POST 'https://sepa.vaimee.it:8443/auth/realms/MONAS/cl
 		if (client_id == null)
 			throw new SEPASecurityException("client_id is null");
 
-		logger.info("REGISTER " + client_id);
+		logger.log(Level.getLevel("oauth"),"REGISTER " + client_id);
 		
 		CloseableHttpResponse response = null;
 		long start = Timings.getTime();
@@ -105,7 +102,7 @@ curl --location --request POST 'https://sepa.vaimee.it:8443/auth/realms/MONAS/cl
 					.build();
 			httpRequest.setConfig(requestConfig);
 
-			logger.trace(httpRequest);
+			logger.log(Level.getLevel("oauth"),"Request: "+httpRequest);
 
 			try {
 				response = httpClient.execute(httpRequest);
@@ -114,7 +111,7 @@ curl --location --request POST 'https://sepa.vaimee.it:8443/auth/realms/MONAS/cl
 				return new ErrorResponse(HttpStatus.SC_SERVICE_UNAVAILABLE, "HttpExecute", e.getMessage());
 			}
 
-			logger.debug("Response: " + response);
+			logger.log(Level.getLevel("oauth"),"Response: " + response);
 			HttpEntity entity = response.getEntity();
 			String jsonResponse = EntityUtils.toString(entity, Charset.forName("UTF-8"));
 
@@ -172,7 +169,7 @@ curl --location --request POST 'https://sepa.vaimee.it:8443/auth/realms/MONAS/cl
 		 * 
 		 * grant_type=client_credentials
 		 **/
-		logger.info("TOKEN_REQUEST: " + authorization);
+		logger.log(Level.getLevel("oauth"),"TOKEN_REQUEST: " + authorization);
 
 		CloseableHttpResponse response = null;
 		long start = Timings.getTime();
@@ -200,7 +197,7 @@ curl --location --request POST 'https://sepa.vaimee.it:8443/auth/realms/MONAS/cl
 				return err;
 			}
 
-			logger.debug("Response: " + response);
+			logger.log(Level.getLevel("oauth"),"Response: " + response);
 			HttpEntity entity = response.getEntity();
 			String jsonResponse = EntityUtils.toString(entity, Charset.forName("UTF-8"));
 			EntityUtils.consume(entity);

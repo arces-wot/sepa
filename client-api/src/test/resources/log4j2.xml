@@ -11,6 +11,13 @@
 		TRACE 600 
 		ALL Integer.MAX_VALUE -->
 		<CustomLevel name="timing" intLevel="550" />
+		<CustomLevel name="SPUManager" intLevel="700" />
+		<CustomLevel name="spu" intLevel="700" />
+		<CustomLevel name="timing" intLevel="700" />
+		<CustomLevel name="subscriptions" intLevel="700" />
+		<CustomLevel name="http" intLevel="700" />
+		<CustomLevel name="oauth" intLevel="700" />
+		<CustomLevel name="ldap" intLevel="700" />
 	</CustomLevels>
 	<Appenders>
 		<Console name="Console" target="SYSTEM_OUT">

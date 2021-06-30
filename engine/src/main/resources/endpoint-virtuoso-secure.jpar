@@ -16,8 +16,9 @@
 		},
 		"update": {
 			"path": "/sparql-auth",
-			"method": "POST",
-			"format": "JSON"
+			"method": "URL_ENCODED_POST",
+			"format": "JSON",
+			"urlEncodedGraphsPatch" : true
 		}
 	}
 }

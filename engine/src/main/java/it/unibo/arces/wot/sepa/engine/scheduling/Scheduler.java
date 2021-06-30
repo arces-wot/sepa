@@ -141,10 +141,6 @@ public class Scheduler extends Thread implements SchedulerMBean {
 		return SchedulerBeans.getStatistics();
 	}
 
-//	public long getErrors() {
-//		return SchedulerBeans.getErrors();
-//	}
-
 	public long getRequests_pending() {
 		return SchedulerBeans.getQueue_Pending();
 	}
@@ -210,5 +206,10 @@ public class Scheduler extends Thread implements SchedulerMBean {
 	@Override
 	public long getPendingUnsubscribes() {
 		return queue.getPendingUnsubscribes();
+	}
+
+	@Override
+	public void setQueueSize(int schedulingQueueSize) {
+		SchedulerBeans.setQueueSize(schedulingQueueSize);
 	}
 }

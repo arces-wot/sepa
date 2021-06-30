@@ -7,6 +7,7 @@ import org.apache.directory.api.ldap.model.cursor.EntryCursor;
 import org.apache.directory.api.ldap.model.exception.LdapException;
 import org.apache.directory.api.ldap.model.message.SearchScope;
 import org.apache.directory.ldap.client.api.LdapNetworkConnection;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -33,8 +34,8 @@ public class SyncLdap implements IUsersSync {
 		endpointPasswordUid = "uid=endpointUsersPassword," +prop.getUsersDN()+","+prop.getBase();
 		usersUid = "ou=users," + (prop.getUsersDN() == null ? "" : prop.getUsersDN()+",") + prop.getBase();
 		
-		logger.debug("endpointPasswordUid: "+endpointPasswordUid);
-		logger.debug("usersUid: "+usersUid);
+		logger.log(Level.getLevel("ldap"),"endpointPasswordUid: "+endpointPasswordUid);
+		logger.log(Level.getLevel("ldap"),"usersUid: "+usersUid);
 		
 		endpointPassword = retrievePassword();
 		
@@ -59,14 +60,14 @@ public class SyncLdap implements IUsersSync {
 		try {
 			bind();
 			
-			logger.trace("[LDAP] Sync LDAP "+ldap.getConfig().getLdapHost()+":"+ldap.getConfig().getLdapPort()+" Base DN: " + endpointPasswordUid);
+			logger.log(Level.getLevel("ldap"),"[LDAP] Sync LDAP "+ldap.getConfig().getLdapHost()+":"+ldap.getConfig().getLdapPort()+" Base DN: " + endpointPasswordUid);
 
 			EntryCursor cursor = ldap.search(endpointPasswordUid, "(objectclass=simpleSecurityObject)", SearchScope.OBJECT);
 			
 			if (cursor.next()) {
 				// Password has to be store as "plain text"
 				ret = new String(cursor.get().get("userPassword").get().getBytes());
-				logger.trace("userPassword: "+ret);				
+				logger.log(Level.getLevel("ldap"),"userPassword: "+ret);				
 			}
 			else throw new SEPASecurityException(endpointPasswordUid+" not found in LDAP");
 		} catch (LdapException | CursorException  e) {
@@ -84,19 +85,19 @@ public class SyncLdap implements IUsersSync {
 		try {
 			bind();
 			
-			logger.trace("[LDAP] Sync LDAP "+ldap.getConfig().getLdapHost()+":"+ldap.getConfig().getLdapPort()+" Base DN: " + usersUid);
+			logger.log(Level.getLevel("ldap"),"[LDAP] Sync LDAP "+ldap.getConfig().getLdapHost()+":"+ldap.getConfig().getLdapPort()+" Base DN: " + usersUid);
 
 			EntryCursor cursor = ldap.search(usersUid, "(objectclass=inetOrgPerson)", SearchScope.ONELEVEL);
 			
 			for (org.apache.directory.api.ldap.model.entry.Entry entry: cursor) {
-				logger.trace(entry.toString("--"));
+				logger.log(Level.getLevel("ldap"),entry.toString("--"));
 				
 				if (entry.get("uid") == null) {
-					logger.warn("Missing *uid*");
+					logger.log(Level.getLevel("ldap"),"Missing *uid*");
 					continue;
 				}
 				if (entry.get("description") == null) {
-					logger.warn("Missing *description* "+entry.get("uid"));
+					logger.log(Level.getLevel("ldap"),"Missing *description* "+entry.get("uid"));
 					continue;
 				}
 				String uid = entry.get("uid").getString();

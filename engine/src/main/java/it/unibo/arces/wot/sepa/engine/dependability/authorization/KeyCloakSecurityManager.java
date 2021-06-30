@@ -7,6 +7,7 @@ import java.util.Date;
 import javax.net.ssl.SSLContext;
 
 import org.apache.http.HttpStatus;
+import org.apache.logging.log4j.Level;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.RSAKey;
@@ -35,7 +36,7 @@ public class KeyCloakSecurityManager extends SecurityManager {
 
 		new UsersSync(ldap, isql);
 		
-		logger.debug("EndpointUsersPassword: "+ldap.getEndpointUsersPassword());
+		logger.log(Level.getLevel("oauth"),"EndpointUsersPassword: "+ldap.getEndpointUsersPassword());
 	}
 	
 	@Override
@@ -61,7 +62,7 @@ public class KeyCloakSecurityManager extends SecurityManager {
 	 * */
 	@Override
 	public synchronized ClientAuthorization validateToken(String accessToken) {
-		logger.debug("VALIDATE TOKEN");
+		logger.log(Level.getLevel("oauth"),"VALIDATE TOKEN");
 
 		// Parse token
 		SignedJWT signedJWT = null;
@@ -90,11 +91,11 @@ public class KeyCloakSecurityManager extends SecurityManager {
 		JWTClaimsSet claimsSet = null;
 		try {
 			claimsSet = signedJWT.getJWTClaimsSet();
-			logger.debug(claimsSet);
+			logger.log(Level.getLevel("oauth"),claimsSet);
 			// Get client credentials for accessing the SPARQL endpoint
 			uid = claimsSet.getStringClaim("username");
 			if (uid == null) {
-				logger.debug("<username> claim is null. Look for <preferred_username>");
+				logger.log(Level.getLevel("oauth"),"<username> claim is null. Look for <preferred_username>");
 				uid = claimsSet.getStringClaim("preferred_username");
 				if (uid == null) {
 					logger.error("USER ID not found...");
@@ -102,9 +103,9 @@ public class KeyCloakSecurityManager extends SecurityManager {
 				}
 			}
 			
-			logger.debug("Subject: "+claimsSet.getSubject());
-			logger.debug("Issuer: "+claimsSet.getIssuer());
-			logger.debug("Username: "+uid);
+			logger.log(Level.getLevel("oauth"),"Subject: "+claimsSet.getSubject());
+			logger.log(Level.getLevel("oauth"),"Issuer: "+claimsSet.getIssuer());
+			logger.log(Level.getLevel("oauth"),"Username: "+uid);
 		} catch (ParseException e) {
 			logger.error(e.getMessage());
 			return new ClientAuthorization("invalid_grant", "ParseException. " + e.getMessage());
@@ -135,7 +136,7 @@ public class KeyCloakSecurityManager extends SecurityManager {
 		Credentials cred = null;
 		try {
 			cred = getEndpointCredentials(uid);
-			logger.debug("Endpoint credentials: "+cred);
+			logger.log(Level.getLevel("oauth"),"Endpoint credentials: "+cred);
 		} catch (SEPASecurityException e) {
 			logger.error("Failed to retrieve credentials (" + uid + ")");
 			return new ClientAuthorization("invalid_grant", "Failed to get credentials (" + uid + ")");

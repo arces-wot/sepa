@@ -94,7 +94,11 @@ public class Subscriptions {
 
 			// All graphs: NO FILTER
 			// TODO: default graph?
-			if (context.contains("*") || target.contains("*")) {
+			if (context.isEmpty() && target.isEmpty()) {
+				// DEFAULT GRAPHs
+				ret.add(requests.get(sub));
+			}
+			else if (context.contains("*") || target.contains("*")) {
 				ret.add(requests.get(sub));
 			} else
 				for (String graph : target) {
@@ -233,7 +237,7 @@ public class Subscriptions {
 		
 		String spuid = notify.getSpuid();
 
-		if (!spus.containsKey(spuid)) return;
+		if (!spus.containsKey(spuid)) return;		
 		
 		for (Subscriber client : handlers.get(spuid)) {
 			// Dispatching events

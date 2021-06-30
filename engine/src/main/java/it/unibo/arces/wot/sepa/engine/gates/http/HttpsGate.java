@@ -36,8 +36,7 @@ import it.unibo.arces.wot.sepa.engine.core.EngineProperties;
 import it.unibo.arces.wot.sepa.engine.dependability.Dependability;
 import it.unibo.arces.wot.sepa.engine.protocol.oauth.JWTRequestHandler;
 import it.unibo.arces.wot.sepa.engine.protocol.oauth.RegisterHandler;
-import it.unibo.arces.wot.sepa.engine.protocol.sparql11.SecureQueryHandler;
-import it.unibo.arces.wot.sepa.engine.protocol.sparql11.SecureUpdateHandler;
+import it.unibo.arces.wot.sepa.engine.protocol.sparql11.SecureSPARQL11Handler;
 import it.unibo.arces.wot.sepa.engine.scheduling.Scheduler;
 
 public class HttpsGate {
@@ -54,14 +53,14 @@ public class HttpsGate {
 	public HttpsGate(EngineProperties properties, Scheduler scheduler) throws SEPASecurityException, SEPAProtocolException {
 
 		try {
+			SecureSPARQL11Handler handler = new SecureSPARQL11Handler(scheduler,properties.getSecurePath() + properties.getQueryPath(),properties.getSecurePath() + properties.getUpdatePath());
+
 			server = ServerBootstrap.bootstrap().setListenerPort(properties.getHttpsPort()).setServerInfo(serverInfo)
 					.setIOReactorConfig(config).setSslContext(Dependability.getSSLContext())
 					.setExceptionLogger(ExceptionLogger.STD_ERR)
 					.registerHandler(properties.getRegisterPath(), new RegisterHandler())
-					.registerHandler(properties.getSecurePath() + properties.getQueryPath(),
-							new SecureQueryHandler(scheduler))
-					.registerHandler(properties.getSecurePath() + properties.getUpdatePath(),
-							new SecureUpdateHandler(scheduler))
+					.registerHandler(properties.getSecurePath() + properties.getQueryPath(),handler)
+					.registerHandler(properties.getSecurePath() + properties.getUpdatePath(),handler)
 					.registerHandler(properties.getTokenRequestPath(), new JWTRequestHandler())
 					.registerHandler("/echo", new EchoHandler())
 					.registerHandler("", new EchoHandler()).create();

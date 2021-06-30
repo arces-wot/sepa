@@ -1,34 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration>
 	<CustomLevels>
-		<!-- Standard Level intLevel 
-		OFF 0 
-		FATAL 100 
-		ERROR 200 
-		WARN 300 
-		INFO 400 
-		DEBUG 500 
-		TRACE 600 
-		ALL Integer.MAX_VALUE -->
-		<CustomLevel name="SPUManager" intLevel="101" />
-		<CustomLevel name="spu" intLevel="102" />
-		<CustomLevel name="timing" intLevel="330" />
-		<CustomLevel name="subscriptions" intLevel="103" />
-		<CustomLevel name="http" intLevel="250" />
+		<!-- Standard Level intLevel OFF 0 FATAL 100 ERROR 200 WARN 300 INFO 400 
+			DEBUG 500 TRACE 600 ALL Integer.MAX_VALUE -->
+		<CustomLevel name="SPUManager" intLevel="401" />
+		<CustomLevel name="spu" intLevel="401" />
+		<CustomLevel name="timing" intLevel="700" />
+		<CustomLevel name="subscriptions" intLevel="401" />
+		<CustomLevel name="http" intLevel="700" />
+		<CustomLevel name="oauth" intLevel="700" />
+		<CustomLevel name="ldap" intLevel="700" />
 	</CustomLevels>
 	<Appenders>
 		<Console name="Console" target="SYSTEM_OUT">
 			<PatternLayout
 				pattern="%d{ISO8601} [%-5level] %t (%F:%L) %msg%n%throwable" />
 		</Console>
-		<File name="Log" fileName="sepa.engine.csv">
-		<PatternLayout pattern="%d{ISO8601}|[%-5level]|%t|(%F:%L)|%msg%n%throwable\n"/>
+		<File name="Log" fileName="logs/${sys:logFilename}.csv">
+			<PatternLayout
+				pattern="%d{ISO8601}|[%-5level]|%t|(%F:%L)|%msg%n%throwable\n" />
 		</File>
 	</Appenders>
 	<Loggers>
 		<Root level="debug">
 			<AppenderRef ref="Console" level="debug" />
-<!-- 			<AppenderRef ref="Log" level="error"/> -->
+			<AppenderRef ref="Log" level="debug" />
 		</Root>
 	</Loggers>
 </Configuration>

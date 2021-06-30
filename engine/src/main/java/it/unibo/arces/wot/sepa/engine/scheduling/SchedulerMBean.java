@@ -34,4 +34,5 @@ public interface SchedulerMBean {
 	public void reset();
 	
 	public int getQueueSize();
+	public void setQueueSize(int schedulingQueueSize);
 }

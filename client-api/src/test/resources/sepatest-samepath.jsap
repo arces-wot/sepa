@@ -1,0 +1,74 @@
+{
+	"host": "localhost",
+	"oauth": {
+		"enable" : false
+	},
+	"sparql11protocol": {
+		"protocol": "http",
+		"port": 8000,
+		"query": {
+			"path": "/sparql",
+			"method": "POST",
+			"format": "JSON"
+		},
+		"update": {
+			"path": "/sparql",
+			"method": "POST",
+			"format": "JSON"
+		}
+	},
+	"sparql11seprotocol": {
+		"protocol": "ws",
+		"availableProtocols": {
+			"ws": {
+				"port": 9000,
+				"path": "/subscribe"
+			},
+			"wss": {
+				"port": 9443,
+				"path": "/secure/subscribe"
+			}
+		}
+	},
+	"namespaces": {
+		"sepa": "http://wot.arces.unibo.it/sepa#",
+		"rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	},
+	"updates": {
+		"WRONG" : {
+			"sparql" : "WITH <http://sepatest> DELETE {?x ?y} WHERE {?y ?z}"
+		},
+		"DELETE_ALL" : {
+			"sparql" : "WITH <http://sepatest> DELETE {?x ?y ?z} WHERE {?x ?y ?z}"
+		},
+		"VAIMEE": {
+			"sparql": "WITH <http://sepatest> DELETE {sepa:SV sepa:PV ?o}  WHERE {sepa:SV sepa:PV ?o} ; INSERT DATA {GRAPH<http://sepatest> {sepa:SV sepa:PV \"ვაიმეე\"}}"
+		},
+		"RANDOM": {
+			"sparql": "WITH <http://sepatest> DELETE {sepa:S sepa:P ?o} WHERE {sepa:S sepa:P ?o} ; WITH <http://sepatest> INSERT {sepa:S sepa:P ?random} WHERE {BIND(IRI(CONCAT(\"http://wot.arces.unibo.it/sepa#Random-\",STRUUID())) AS ?random)}"
+		},
+		"RANDOM1": {
+			"sparql": "WITH <http://sepatest> DELETE {sepa:S sepa:P ?o} WHERE {sepa:S1 sepa:P1 ?o} ; WITH <http://sepatest> INSERT {sepa:S1 sepa:P1 ?random} WHERE {BIND(IRI(CONCAT(\"http://wot.arces.unibo.it/sepa#Random-\",STRUUID())) AS ?random)}"
+		}
+	},
+	"queries": {
+		"WRONG": {
+			"sparql": "SELECT * WHERE {GRAPH <http://sepatest> {?x \"ვაიმეე\"}}"
+		},
+		"VAIMEE": {
+			"sparql": "SELECT * WHERE {GRAPH <http://sepatest> {?x ?y \"ვაიმეე\"}}"
+		},
+		"ALL": {
+			"sparql": "SELECT * WHERE {GRAPH <http://sepatest> {?x ?y ?z}}"
+		},
+		"RANDOM": {
+			"sparql": "SELECT * WHERE {GRAPH <http://sepatest> {sepa:S sepa:P ?random}}"
+		},
+		"RANDOM1": {
+			"sparql": "SELECT * WHERE {GRAPH <http://sepatest> {sepa:S1 sepa:P1 ?random}}"
+		},
+		"COUNT": {
+			"sparql": "SELECT (COUNT(?x) AS ?n) WHERE {GRAPH <http://sepatest> {?x ?y ?z}}"
+		}
+	}
+}

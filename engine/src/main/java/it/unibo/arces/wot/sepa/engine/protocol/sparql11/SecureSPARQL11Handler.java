@@ -1,4 +1,4 @@
-/* HTTP handler for SPARQL 1.1 query over SSL
+/* HTTP handler for SPARQL 1.1 update over SSL
  * 
  * Author: Luca Roffia (luca.roffia@unibo.it)
 
@@ -23,13 +23,16 @@ import org.apache.http.HttpRequest;
 
 import it.unibo.arces.wot.sepa.commons.exceptions.SEPASecurityException;
 import it.unibo.arces.wot.sepa.commons.security.ClientAuthorization;
+import it.unibo.arces.wot.sepa.engine.bean.SEPABeans;
 import it.unibo.arces.wot.sepa.engine.dependability.Dependability;
 import it.unibo.arces.wot.sepa.engine.scheduling.Scheduler;
 
-public class SecureQueryHandler extends QueryHandler implements SecureQueryHandlerMBean {
+public class SecureSPARQL11Handler extends SPARQL11Handler implements SecureSPARQL11HandlerMBean {
 
-	public SecureQueryHandler(Scheduler scheduler) throws IllegalArgumentException {
-		super(scheduler);
+	public SecureSPARQL11Handler(Scheduler scheduler,String queryPath,String updatePath) throws IllegalArgumentException {
+		super(scheduler,queryPath,updatePath);
+		
+		SEPABeans.registerMBean("SEPA:type=" + this.getClass().getSimpleName(), this);
 	}
 
 	/**
@@ -94,16 +97,18 @@ According to RFC6749, the error member can assume the following values: invalid_
 		// Extract Bearer authorization
 		Header[] bearer = request.getHeaders("Authorization");
 
-		if (bearer.length != 1) {
-			logger.error("Authorization header is missing or multiple");
-//			return new ErrorResponse(HttpStatus.SC_BAD_REQUEST, "invalid_request",
-//					"Authorization header must be a single one");
-			return new ClientAuthorization("invalid_request","Authorization header must be a single one");
+		if (bearer.length == 0) {
+			logger.error("Authorization header is missing");
+			return new ClientAuthorization("invalid_request","Authorization header is missing");
 		}
+
+		if (bearer.length > 1) {
+			logger.error("Multiple authorization headers not allowed");
+			return new ClientAuthorization("invalid_request","Multiple authorization headers not allowed");
+		}
+		
 		if (!bearer[0].getValue().toUpperCase().startsWith("BEARER ")) {
 			logger.error("Authorization must be ***Bearer JWT***");
-//			return new ErrorResponse(HttpStatus.SC_BAD_REQUEST, "invalid_request",
-//					"Authorization header must be ***Bearer JWT***");
 			return new ClientAuthorization("unsupported_grant_type","Authorization header must be ***Bearer JWT***");
 		}
 
@@ -119,5 +124,4 @@ According to RFC6749, the error member can assume the following values: invalid_
 	public long getErrors_AuthorizingFailed() {
 		return jmx.getErrors_AuthorizingFailed();
 	}
-
 }

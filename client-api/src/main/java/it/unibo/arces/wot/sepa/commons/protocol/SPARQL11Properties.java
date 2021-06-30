@@ -42,7 +42,6 @@ import it.unibo.arces.wot.sepa.commons.exceptions.SEPAPropertiesException;
  * "formats" is the required return format, for the update it specifies the
  * format implemented by the SPARQL 1.1 Protocol service.
  * 
- * 
  * <pre>
  {
  	"host" : "localhost" ,
@@ -104,9 +103,19 @@ public class SPARQL11Properties {
 	/**
 	 * The Enum HTTPMethod (GET,POST,URL_ENCODED_POST).
 	 */
-	public enum HTTPMethod {
+	public enum QueryHTTPMethod {
 		/** The get. */
 		GET,
+		/** The post. */
+		POST,
+		/** The url encoded post. */
+		URL_ENCODED_POST
+	};
+	
+	/**
+	 * The Enum HTTPMethod (GET,POST,URL_ENCODED_POST).
+	 */
+	public enum UpdateHTTPMethod {
 		/** The post. */
 		POST,
 		/** The url encoded post. */
@@ -219,7 +228,8 @@ public class SPARQL11Properties {
 		"update": {
 			"path": "/update",
 			"method": "POST | URL_ENCODED_POST",
-			"format": "JSON | HTML"
+			"format": "JSON | HTML",
+			"urlEncodedGraphs" : "true | false" (optional, default: true)
 		}
 	}
 	}
@@ -351,7 +361,8 @@ public class SPARQL11Properties {
 
 		try {
 			JsonArray array = jsap.getAsJsonObject("graphs").get("default-graph-uri").getAsJsonArray();
-			for (JsonElement element : array) ret.add(element.getAsString());
+			for (JsonElement element : array)
+				ret.add(element.getAsString());
 		} catch (Exception e) {
 		}
 
@@ -360,8 +371,10 @@ public class SPARQL11Properties {
 
 	public void setDefaultGraphURI(Set<String> graph) {
 		JsonArray array = new JsonArray();
-		for (String s : graph) array.add(s);
-		if (!jsap.has("graphs")) jsap.add("graphs", new JsonObject());
+		for (String s : graph)
+			array.add(s);
+		if (!jsap.has("graphs"))
+			jsap.add("graphs", new JsonObject());
 		jsap.getAsJsonObject("graphs").add("default-graph-uri", array);
 	}
 
@@ -381,20 +394,23 @@ public class SPARQL11Properties {
 	 */
 	public Set<String> getNamedGraphURI() {
 		HashSet<String> ret = new HashSet<>();
-		
+
 		try {
-			JsonArray array = jsap.getAsJsonObject("graphs").get("named-graph-uri").getAsJsonArray();		
-			for (JsonElement element : array) ret.add(element.getAsString());
+			JsonArray array = jsap.getAsJsonObject("graphs").get("named-graph-uri").getAsJsonArray();
+			for (JsonElement element : array)
+				ret.add(element.getAsString());
 		} catch (Exception e) {
 		}
-		
+
 		return ret;
 	}
 
 	public void setNamedGraphURI(Set<String> graph) {
 		JsonArray array = new JsonArray();
-		for (String s : graph) array.add(s);
-		if (!jsap.has("graphs")) jsap.add("graphs", new JsonObject());
+		for (String s : graph)
+			array.add(s);
+		if (!jsap.has("graphs"))
+			jsap.add("graphs", new JsonObject());
 		jsap.getAsJsonObject("graphs").add("named-graph-uri", array);
 	}
 
@@ -417,7 +433,8 @@ public class SPARQL11Properties {
 
 		try {
 			JsonArray array = jsap.getAsJsonObject("graphs").get("using-graph-uri").getAsJsonArray();
-			for (JsonElement element : array) ret.add(element.getAsString());
+			for (JsonElement element : array)
+				ret.add(element.getAsString());
 		} catch (Exception e) {
 
 		}
@@ -427,8 +444,10 @@ public class SPARQL11Properties {
 
 	public void setUsingGraphURI(Set<String> graph) {
 		JsonArray array = new JsonArray();
-		for (String s : graph) array.add(s);
-		if (!jsap.has("graphs")) jsap.add("graphs", new JsonObject());
+		for (String s : graph)
+			array.add(s);
+		if (!jsap.has("graphs"))
+			jsap.add("graphs", new JsonObject());
 		jsap.getAsJsonObject("graphs").add("using-graph-uri", array);
 	}
 
@@ -448,20 +467,23 @@ public class SPARQL11Properties {
 	 */
 	public Set<String> getUsingNamedGraphURI() {
 		HashSet<String> ret = new HashSet<>();
-		
+
 		try {
-			JsonArray array = jsap.getAsJsonObject("graphs").get("using-named-graph-uri").getAsJsonArray();			
-			for (JsonElement element : array) ret.add(element.getAsString());
+			JsonArray array = jsap.getAsJsonObject("graphs").get("using-named-graph-uri").getAsJsonArray();
+			for (JsonElement element : array)
+				ret.add(element.getAsString());
 		} catch (Exception e) {
 		}
-		
+
 		return ret;
 	}
 
 	public void setUsingNamedGraphURI(Set<String> graph) {
 		JsonArray array = new JsonArray();
-		for (String s : graph) array.add(s);
-		if (!jsap.has("graphs")) jsap.add("graphs", new JsonObject());
+		for (String s : graph)
+			array.add(s);
+		if (!jsap.has("graphs"))
+			jsap.add("graphs", new JsonObject());
 		jsap.getAsJsonObject("graphs").add("using-named-graph-uri", array);
 	}
 
@@ -483,20 +505,20 @@ public class SPARQL11Properties {
 	 *
 	 * @return the update method (POST, URL_ENCODED_POST)
 	 * 
-	 * @see HTTPMethod
+	 * @see QueryHTTPMethod
 	 */
-	public HTTPMethod getUpdateMethod() {
+	public UpdateHTTPMethod getUpdateMethod() {
 		switch (jsap.getAsJsonObject("sparql11protocol").getAsJsonObject("update").get("method").getAsString()) {
 		case "POST":
-			return HTTPMethod.POST;
+			return UpdateHTTPMethod.POST;
 		case "URL_ENCODED_POST":
-			return HTTPMethod.URL_ENCODED_POST;
+			return UpdateHTTPMethod.URL_ENCODED_POST;
 		default:
-			return HTTPMethod.GET;
+			return UpdateHTTPMethod.POST;
 		}
 	}
 
-	public void setUpdateMethod(HTTPMethod method) {
+	public void setUpdateMethod(UpdateHTTPMethod method) {
 		switch (method) {
 		case POST:
 			jsap.getAsJsonObject("sparql11protocol").getAsJsonObject("update").add("method", new JsonPrimitive("POST"));
@@ -505,9 +527,9 @@ public class SPARQL11Properties {
 			jsap.getAsJsonObject("sparql11protocol").getAsJsonObject("update").add("method",
 					new JsonPrimitive("URL_ENCODED_POST"));
 			break;
-		case GET:
-			jsap.getAsJsonObject("sparql11protocol").getAsJsonObject("update").add("method", new JsonPrimitive("GET"));
-			break;
+//		case GET:
+//			jsap.getAsJsonObject("sparql11protocol").getAsJsonObject("update").add("method", new JsonPrimitive("POST"));
+//			break;
 		}
 	}
 
@@ -558,22 +580,22 @@ public class SPARQL11Properties {
 	 *
 	 * @return the query method (POST, URL_ENCODED_POST)
 	 * 
-	 * @see HTTPMethod
+	 * @see QueryHTTPMethod
 	 */
-	public HTTPMethod getQueryMethod() {
+	public QueryHTTPMethod getQueryMethod() {
 		switch (jsap.getAsJsonObject("sparql11protocol").getAsJsonObject("query").get("method").getAsString()) {
 		case "POST":
-			return HTTPMethod.POST;
+			return QueryHTTPMethod.POST;
 		case "GET":
-			return HTTPMethod.GET;
+			return QueryHTTPMethod.GET;
 		case "URL_ENCODED_POST":
-			return HTTPMethod.URL_ENCODED_POST;
+			return QueryHTTPMethod.URL_ENCODED_POST;
 		default:
-			return HTTPMethod.POST;
+			return QueryHTTPMethod.POST;
 		}
 	}
 
-	public void setQueryMethod(HTTPMethod method) {
+	public void setQueryMethod(QueryHTTPMethod method) {
 		switch (method) {
 		case POST:
 			jsap.getAsJsonObject("sparql11protocol").getAsJsonObject("query").add("method", new JsonPrimitive("POST"));

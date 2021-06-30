@@ -68,7 +68,7 @@ public class ITWebSocketSubscriptionProtocol implements ISubscriptionHandler {
 	}
 
 	@RepeatedTest(ConfigurationProvider.REPEATED_TEST)
-	@Timeout(5)
+	@Timeout(10)
 	public void SubscribeAndResults() throws SEPASecurityException, SEPAPropertiesException, SEPAProtocolException,
 			IOException, InterruptedException {
 		WebsocketSubscriptionProtocol client = new WebsocketSubscriptionProtocol(provider.getJsap().getSubscribeHost(), provider.getJsap().getSubscribePort(), provider.getJsap().getSubscribePath(), this, provider.getClientSecurityManager());
@@ -107,7 +107,7 @@ public class ITWebSocketSubscriptionProtocol implements ISubscriptionHandler {
 	}
 
 	@RepeatedTest(ConfigurationProvider.REPEATED_TEST)
-	@Timeout(5)
+	@Timeout(10)
 	public void WrongSubscribe() throws SEPASecurityException, SEPAPropertiesException, SEPAProtocolException,
 			IOException, InterruptedException {
 		WebsocketSubscriptionProtocol client = new WebsocketSubscriptionProtocol(provider.getJsap().getSubscribeHost(), provider.getJsap().getSubscribePort(), provider.getJsap().getSubscribePath(), this, provider.getClientSecurityManager());

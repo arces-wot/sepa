@@ -23,6 +23,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -269,6 +271,30 @@ public class JSAP extends SPARQL11SEProperties {
 		read(path, true, validate);
 	}
 
+	public void read(InputStream input,boolean replace,boolean validate) throws SEPAPropertiesException, SEPASecurityException {
+		InputStreamReader in  = new InputStreamReader(input);
+		
+		JsonObject temp = new JsonParser().parse(in).getAsJsonObject();
+
+		merge(temp, jsap, replace);
+
+		// Validate the JSON elements
+		if (validate)
+			validate();
+
+		// OAuth
+		if (temp.has("oauth")) {
+			oauth = new OAuthProperties(input);
+		}
+
+		buildSPARQLPrefixes();
+	}
+	
+	public void read(InputStream filename)
+			throws SEPAPropertiesException, SEPASecurityException {
+		read(filename, true, false);
+	}
+	
 	/**
 	 * Parse the file and merge the content with the actual JSAP object. Primitive
 	 * values are replaced if replace = true.
@@ -505,17 +531,17 @@ public class JSAP extends SPARQL11SEProperties {
 		return super.getUpdateAcceptHeader();
 	}
 
-	public HTTPMethod getUpdateMethod(String id) {
+	public UpdateHTTPMethod getUpdateMethod(String id) {
 		try {
 			switch (jsap.getAsJsonObject("updates").getAsJsonObject(id).getAsJsonObject("sparql11protocol")
 					.getAsJsonObject("update").get("method").getAsString()) {
 			case "URL_ENCODED_POST":
-				return HTTPMethod.URL_ENCODED_POST;
+				return UpdateHTTPMethod.URL_ENCODED_POST;
 			case "POST":
-				return HTTPMethod.POST;
-			case "GET":
-				// Virtuoso PATCH
-				return HTTPMethod.GET;
+				return UpdateHTTPMethod.POST;
+//			case "GET":
+//				// Virtuoso PATCH
+//				return HTTPMethod.GET;
 			}
 		} catch (Exception e) {
 		}
@@ -608,7 +634,7 @@ public class JSAP extends SPARQL11SEProperties {
 		}
 	}
 
-	public void setUpdateMethod(String id, HTTPMethod method) {
+	public void setUpdateMethod(String id, UpdateHTTPMethod method) {
 		JsonObject prop = checkAndCreate(id, true);
 
 		if (!prop.has("update"))
@@ -616,9 +642,9 @@ public class JSAP extends SPARQL11SEProperties {
 		JsonObject temp = prop.getAsJsonObject("update");
 
 		switch (method) {
-		case GET:
-			temp.add("method", new JsonPrimitive("GET"));
-			break;
+//		case GET:
+//			temp.add("method", new JsonPrimitive("GET"));
+//			break;
 		case POST:
 			temp.add("method", new JsonPrimitive("POST"));
 			break;
@@ -740,21 +766,22 @@ public class JSAP extends SPARQL11SEProperties {
 		return super.getQueryPath();
 	}
 
-	public HTTPMethod getQueryMethod(String id) {
+	public QueryHTTPMethod getQueryMethod(String id) {
 		try {
 			switch (jsap.getAsJsonObject("queries").getAsJsonObject(id).getAsJsonObject("sparql11protocol")
 					.getAsJsonObject("query").get("method").getAsString()) {
 			case "URL_ENCODED_POST":
-				return HTTPMethod.URL_ENCODED_POST;
+				return QueryHTTPMethod.URL_ENCODED_POST;
 			case "POST":
-				return HTTPMethod.POST;
+				return QueryHTTPMethod.POST;
 			case "GET":
-				return HTTPMethod.GET;
+				return QueryHTTPMethod.GET;
 			}
 		} catch (Exception e) {
+			
 		}
 
-		return super.getUpdateMethod();
+		return super.getQueryMethod();
 	}
 
 	public String getQueryAcceptHeader(String id) {
@@ -833,7 +860,7 @@ public class JSAP extends SPARQL11SEProperties {
 		}
 	}
 
-	public void setQueryMethod(String id, HTTPMethod method) {
+	public void setQueryMethod(String id, QueryHTTPMethod method) {
 		JsonObject prop = checkAndCreate(id, false);
 
 		if (!prop.has("query"))
@@ -1468,6 +1495,5 @@ public class JSAP extends SPARQL11SEProperties {
 			jsap.getAsJsonObject("sparql11seprotocol").add("reconnect", new JsonPrimitive(b));
 		}
 	}
-
 	
 }

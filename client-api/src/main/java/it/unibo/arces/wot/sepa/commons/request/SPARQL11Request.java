@@ -21,10 +21,7 @@ package it.unibo.arces.wot.sepa.commons.request;
 import java.util.HashSet;
 import java.util.Set;
 
-import it.unibo.arces.wot.sepa.commons.protocol.SPARQL11Properties.HTTPMethod;
-
 public abstract class SPARQL11Request extends Request {
-	protected HTTPMethod method = HTTPMethod.POST;
 	protected String scheme = null;
 	protected String host = null;
 	protected int port = -1;
@@ -51,10 +48,6 @@ public abstract class SPARQL11Request extends Request {
 	public String toString() {
 		return sparql;
 		
-	}
-	
-	public HTTPMethod getHttpMethod() {
-		return method;
 	}
 
 	public String getScheme() {

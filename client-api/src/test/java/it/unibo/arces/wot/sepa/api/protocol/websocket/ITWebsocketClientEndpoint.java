@@ -73,7 +73,7 @@ public class ITWebsocketClientEndpoint implements ISubscriptionHandler {
 	}
 
 	@RepeatedTest(ConfigurationProvider.REPEATED_TEST)
-	@Timeout(5)
+	@Timeout(10)
 	public void Connect() throws SEPASecurityException, SEPAPropertiesException, SEPAProtocolException, IOException {
 		WebsocketClientEndpoint client = new WebsocketClientEndpoint(provider.getClientSecurityManager(), this);
 		client.connect(url);
@@ -81,7 +81,7 @@ public class ITWebsocketClientEndpoint implements ISubscriptionHandler {
 	}
 
 	@RepeatedTest(ConfigurationProvider.REPEATED_TEST)
-	@Timeout(5)
+	@Timeout(10)
 	public void Subscribe() throws SEPASecurityException, SEPAPropertiesException, SEPAProtocolException, IOException,
 			InterruptedException {
 		WebsocketClientEndpoint client = new WebsocketClientEndpoint(provider.getClientSecurityManager(), this);
@@ -95,7 +95,7 @@ public class ITWebsocketClientEndpoint implements ISubscriptionHandler {
 	}
 
 	@RepeatedTest(ConfigurationProvider.REPEATED_TEST)
-	@Timeout(5)
+	@Timeout(10)
 	public void SubscribeAndResults() throws SEPASecurityException, SEPAPropertiesException, SEPAProtocolException,
 			IOException, InterruptedException {
 		WebsocketClientEndpoint client = new WebsocketClientEndpoint(provider.getClientSecurityManager(), this);
@@ -114,7 +114,7 @@ public class ITWebsocketClientEndpoint implements ISubscriptionHandler {
 	}
 
 	@RepeatedTest(ConfigurationProvider.REPEATED_TEST)
-	@Timeout(5)
+	@Timeout(10)
 	public void SubscribeAndUnsubscribe() throws SEPASecurityException, SEPAPropertiesException, SEPAProtocolException,
 			IOException, InterruptedException {
 		WebsocketClientEndpoint client = new WebsocketClientEndpoint(provider.getClientSecurityManager(), this);
@@ -136,7 +136,7 @@ public class ITWebsocketClientEndpoint implements ISubscriptionHandler {
 	}
 
 	@RepeatedTest(ConfigurationProvider.REPEATED_TEST)
-	@Timeout(5)
+	@Timeout(10)
 	public void WrongSubscribe() throws SEPASecurityException, SEPAPropertiesException, SEPAProtocolException,
 			IOException, InterruptedException {
 		WebsocketClientEndpoint client = new WebsocketClientEndpoint(provider.getClientSecurityManager(), this);

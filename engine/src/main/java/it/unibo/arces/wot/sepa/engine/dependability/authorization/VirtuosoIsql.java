@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.Map.Entry;
 
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -108,19 +109,19 @@ public class VirtuosoIsql implements IUsersAcl{
 	}
 	
 	private void isql() throws IOException, InterruptedException {
-		logger.debug("*** Execute isql *** ");
+		logger.log(Level.getLevel("ldap"),"*** Execute isql *** ");
 
 		Process pr = ps.start();
 
 		BufferedReader in = new BufferedReader(new InputStreamReader(pr.getInputStream()));
 		String line;
 		while ((line = in.readLine()) != null) {
-			logger.debug(line);
+			logger.log(Level.getLevel("ldap"),line);
 		}
 		pr.waitFor();
 
 		in.close();
 
-		logger.debug("*** Execute isql END ***");
+		logger.log(Level.getLevel("ldap"),"*** Execute isql END ***");
 	}
 }

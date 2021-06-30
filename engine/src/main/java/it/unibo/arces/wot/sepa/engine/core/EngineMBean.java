@@ -45,4 +45,8 @@ public interface EngineMBean {
 	public boolean getSecure();
 	
 	public void resetAll();
+	
+	public String getSSLCertificate();
+	
+	public void refreshSSLCertificate();
 }

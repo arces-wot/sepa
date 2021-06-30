@@ -5,12 +5,14 @@ public class IsqlProperties {
 	private final String isqlHost;
 	private final String isqlUser;
 	private final String isqlPass;
+	private final int isqlPort;
 	
-	public IsqlProperties(String isqlPath,String isqlHost,String isqlUser,String isqlPass) {
-		this.isqlHost = isqlHost;
-		this.isqlPass = isqlPass;
-		this.isqlPath = isqlPath;
-		this.isqlUser = isqlUser;
+	public IsqlProperties(String path,String host,int port, String uid,String pwd) {
+		this.isqlHost = host;
+		this.isqlPass = pwd;
+		this.isqlPath = path;
+		this.isqlUser = uid;
+		this.isqlPort = port;
 	}
 
 	public String getIsqlPath() {
@@ -18,7 +20,7 @@ public class IsqlProperties {
 	}
 
 	public String getIsqlHost() {
-		return isqlHost;
+		return isqlHost+":"+isqlPort;
 	}
 
 	public String getIsqlUser() {

@@ -36,6 +36,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.conn.ConnectTimeoutException;
+import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -44,7 +45,8 @@ import org.apache.http.util.EntityUtils;
 
 import it.unibo.arces.wot.sepa.commons.exceptions.SEPAPropertiesException;
 import it.unibo.arces.wot.sepa.commons.exceptions.SEPASecurityException;
-import it.unibo.arces.wot.sepa.commons.protocol.SPARQL11Properties.HTTPMethod;
+import it.unibo.arces.wot.sepa.commons.protocol.SPARQL11Properties.QueryHTTPMethod;
+import it.unibo.arces.wot.sepa.commons.protocol.SPARQL11Properties.UpdateHTTPMethod;
 import it.unibo.arces.wot.sepa.commons.request.QueryRequest;
 import it.unibo.arces.wot.sepa.commons.request.Request;
 import it.unibo.arces.wot.sepa.commons.request.UpdateRequest;
@@ -97,7 +99,7 @@ public class SPARQL11Protocol implements Closeable {
 	public void close() throws IOException {
 		httpClient.close();
 	}
-	
+
 	/*
 	 * http://hc.apache.org/httpcomponents-client-4.5.x/tutorial/html/fundamentals.
 	 * html#d5e279
@@ -140,7 +142,7 @@ public class SPARQL11Protocol implements Closeable {
 			logger.trace(req.toString() + " " + request.toString() + " (timeout: " + request.getTimeout() + " ms) ");
 
 			long start = Timings.getTime();
-			
+
 			httpResponse = httpClient.execute(req);
 
 			long stop = Timings.getTime();
@@ -160,17 +162,17 @@ public class SPARQL11Protocol implements Closeable {
 			logger.trace(String.format("Response code: %d", responseCode));
 
 			EntityUtils.consume(responseEntity);
-		} 
-		catch(Exception e) {
-			errorResponse = new ErrorResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getClass().getName(), e.getMessage());
-			
-			// Considered as TIMEOUTS
-			if (e instanceof SocketTimeoutException || e instanceof ConnectTimeoutException || e instanceof RequestAbortedException) 
-				errorResponse = new ErrorResponse(HttpStatus.SC_REQUEST_TIMEOUT, e.getClass().getName(),
-						e.getMessage() + " [timeout: " + request.getTimeout() + " ms retry: " + request.getNRetry()
-								+ "]");
+		} catch (Exception e) {
+			errorResponse = new ErrorResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getClass().getName(),
+					e.getMessage());
+
+			// Considered as *** TIMEOUTS ***
+			if (e instanceof HttpHostConnectException || e instanceof SocketTimeoutException
+					|| e instanceof ConnectTimeoutException || e instanceof RequestAbortedException)
+				errorResponse = new ErrorResponse(HttpStatus.SC_REQUEST_TIMEOUT, e.getClass().getName(), e.getMessage()
+						+ " [timeout: " + request.getTimeout() + " ms retry: " + request.getNRetry() + "]");
 		}
-		
+
 		finally {
 			try {
 				if (httpResponse != null)
@@ -201,23 +203,26 @@ public class SPARQL11Protocol implements Closeable {
 		}
 
 		if (errorResponse != null) {
-			logger.error("Token expired: "+errorResponse.isTokenExpiredError()+" Security manager: "+(sm!=null)+" nRetry: "+request.getNRetry()+" "+errorResponse);
-			
+			logger.error(errorResponse + " Token expired: " + errorResponse.isTokenExpiredError() + " Security manager: " + (sm != null)
+					+ " nRetry: " + request.getNRetry());
+
 			// TOKEN EXPIRED
-			if (errorResponse.isTokenExpiredError()) {	
+			if (errorResponse.isTokenExpiredError()) {
 				try {
 					logger.info("Refresh token");
 					Response ret = sm.refreshToken();
-					
-					if (ret.isError()) return ret;
-					
+
+					if (ret.isError())
+						return ret;
+
 					JWTResponse token = (JWTResponse) ret;
 					logger.debug(token.getAccessToken());
-					req.setHeader("Authorization", token.getTokenType()+" "+token.getAccessToken());
-					//request.setAuthorizationHeader(token.getTokenType()+" "+token.getAccessToken());
-					
+					req.setHeader("Authorization", token.getTokenType() + " " + token.getAccessToken());
+					// request.setAuthorizationHeader(token.getTokenType()+"
+					// "+token.getAccessToken());
+
 				} catch (SEPAPropertiesException | SEPASecurityException e) {
-					logger.error("Failed to refresh token. "+e.getMessage());
+					logger.error("Failed to refresh token. " + e.getMessage());
 					return errorResponse;
 				}
 				return executeRequest(req, request);
@@ -232,7 +237,7 @@ public class SPARQL11Protocol implements Closeable {
 				return executeRequest(req, request);
 
 			}
-				
+
 			return errorResponse;
 		}
 
@@ -424,26 +429,41 @@ public class SPARQL11Protocol implements Closeable {
 
 		// Create POST request
 		try {
-			for (String g : req.getDefaultGraphUri()) {
-				if (graphs == null)
-					graphs = "using-graph-uri=" + URLEncoder.encode(g, "UTF-8");
-				else
-					graphs += "&using-graph-uri=" + URLEncoder.encode(g, "UTF-8");
-			}
-			for (String g : req.getNamedGraphUri()) {
-				if (graphs == null)
-					graphs = "using-named-graph-uri=" + URLEncoder.encode(g, "UTF-8");
-				else
-					graphs += "&using-named-graph-uri=" + URLEncoder.encode(g, "UTF-8");
-			}
+			if (req.getHttpMethod().equals(UpdateHTTPMethod.POST)) {
+				// Graphs
+				for (String g : req.getDefaultGraphUri()) {
+					if (graphs == null)
+						graphs = "using-graph-uri=" + g;
+					else
+						graphs += "&using-graph-uri=" + g;
+				}
+				for (String g : req.getNamedGraphUri()) {
+					if (graphs == null)
+						graphs = "using-named-graph-uri=" + g;
+					else
+						graphs += "&using-named-graph-uri=" + g;
+				}
 
-			if (req.getHttpMethod().equals(HTTPMethod.POST)) {
 				post = new HttpPost(new URI(scheme, null, host, port, updatePath, graphs, null));
 				post.setHeader("Content-Type", "application/sparql-update");
 
 				// Body
 				requestEntity = new StringEntity(req.getSPARQL(), Consts.UTF_8);
 			} else {
+				// Graphs
+				for (String g : req.getDefaultGraphUri()) {
+					if (graphs == null)
+						graphs = "using-graph-uri=" + URLEncoder.encode(g, "UTF-8");
+					else
+						graphs += "&using-graph-uri=" + URLEncoder.encode(g, "UTF-8");
+				}
+				for (String g : req.getNamedGraphUri()) {
+					if (graphs == null)
+						graphs = "using-named-graph-uri=" + URLEncoder.encode(g, "UTF-8");
+					else
+						graphs += "&using-named-graph-uri=" + URLEncoder.encode(g, "UTF-8");
+				}
+
 				post = new HttpPost(new URI(scheme, null, host, port, updatePath, null, null));
 				post.setHeader("Content-Type", "application/x-www-form-urlencoded");
 
@@ -512,26 +532,41 @@ public class SPARQL11Protocol implements Closeable {
 		String queryPath = req.getPath();
 
 		try {
+			// Graphs
 			for (String g : req.getDefaultGraphUri()) {
 				if (graphs == null)
-					graphs = "default-graph-uri=" + URLEncoder.encode(g, "UTF-8");
+					graphs = "default-graph-uri=" + g;
 				else
-					graphs += "&default-graph-uri=" + URLEncoder.encode(g, "UTF-8");
+					graphs += "&default-graph-uri=" + g;
 			}
 			for (String g : req.getNamedGraphUri()) {
 				if (graphs == null)
-					graphs = "named-graph-uri=" + URLEncoder.encode(g, "UTF-8");
+					graphs = "named-graph-uri=" + g;
 				else
-					graphs += "&named-graph-uri=" + URLEncoder.encode(g, "UTF-8");
+					graphs += "&named-graph-uri=" + g;
 			}
 
-			if (req.getHttpMethod().equals(HTTPMethod.POST)) {
+			if (req.getHttpMethod().equals(QueryHTTPMethod.POST)) {
 				post = new HttpPost(new URI(scheme, null, host, port, queryPath, graphs, null));
 				post.setHeader("Content-Type", "application/sparql-query");
 
 				// Body
 				requestEntity = new StringEntity(req.getSPARQL(), Consts.UTF_8);
 			} else {
+				// Graphs
+				for (String g : req.getDefaultGraphUri()) {
+					if (graphs == null)
+						graphs = "default-graph-uri=" + URLEncoder.encode(g, "UTF-8");
+					else
+						graphs += "&default-graph-uri=" + URLEncoder.encode(g, "UTF-8");
+				}
+				for (String g : req.getNamedGraphUri()) {
+					if (graphs == null)
+						graphs = "named-graph-uri=" + URLEncoder.encode(g, "UTF-8");
+					else
+						graphs += "&named-graph-uri=" + URLEncoder.encode(g, "UTF-8");
+				}
+
 				post = new HttpPost(new URI(scheme, null, host, port, queryPath, null, null));
 				post.setHeader("Content-Type", "application/x-www-form-urlencoded");
 
@@ -578,54 +613,47 @@ public class SPARQL11Protocol implements Closeable {
 	 *                            |                default-graph-uri (0 or more)
 	 *                            |                named-graph-uri (0 or more)
 	 * </pre>
+	 * @throws URISyntaxException 
 	 */
 	private Response get(QueryRequest req) {
-		String query;
-		try {
-			query = "query=" + URLEncoder.encode(req.getSPARQL(), "UTF-8");
-		} catch (UnsupportedEncodingException e1) {
-			logger.error(e1.getMessage());
-			return new ErrorResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, "UnsupportedEncodingException",
-					e1.getMessage());
-		}
+		String query = "query=" + req.getSPARQL();
+//		try {
+//			query = "query=" + req.getSPARQL(); //URLEncoder.encode(req.getSPARQL(), "UTF-8");
+//		} catch (UnsupportedEncodingException e1) {
+//			logger.error(e1.getMessage());
+//			return new ErrorResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, "UnsupportedEncodingException",
+//					e1.getMessage());
+//		}
 
 		String graphs = null;
-		try {
-			for (String g : req.getDefaultGraphUri()) {
-				if (graphs == null)
-					graphs = "default-graph-uri=" + URLEncoder.encode(g, "UTF-8");
-				else
-					graphs += "&default-graph-uri=" + URLEncoder.encode(g, "UTF-8");
-			}
-			for (String g : req.getNamedGraphUri()) {
-				if (graphs == null)
-					graphs = "named-graph-uri=" + URLEncoder.encode(g, "UTF-8");
-				else
-					graphs += "&named-graph-uri=" + URLEncoder.encode(g, "UTF-8");
-			}
-		} catch (UnsupportedEncodingException e) {
-			logger.error(e.getMessage());
-			return new ErrorResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, "UnsupportedEncodingException",
-					e.getMessage());
+		for (String g : req.getDefaultGraphUri()) {
+			if (graphs == null)
+				graphs = "default-graph-uri=" + g;
+			else
+				graphs += "&default-graph-uri=" + g;
+		}
+		for (String g : req.getNamedGraphUri()) {
+			if (graphs == null)
+				graphs = "named-graph-uri=" + g;
+			else
+				graphs += "&named-graph-uri=" + g;
 		}
 
 		if (graphs != null)
 			query += "&" + graphs;
 
-		String url;
 		// Setting URL
 		String scheme = req.getScheme();
 		String host = req.getHost();
 		int port = req.getPort();
 		String queryPath = req.getPath();
 
-		if (port != -1)
-			url = scheme + "://" + host + ":" + port + queryPath + "?" + query;
-		else
-			url = scheme + "://" + host + queryPath + "?" + query;
-
-		HttpGet get;
-		get = new HttpGet(url);
+		HttpGet get = null;
+		try {
+			get = new HttpGet(new URI(scheme, null, host, port, queryPath, query, null));
+		} catch (URISyntaxException e) {
+			return new ErrorResponse(HttpStatus.SC_BAD_REQUEST, "URISyntaxException", e.getMessage()); 
+		}
 
 		// Set Accept header
 		get.setHeader("Accept", req.getAcceptHeader());

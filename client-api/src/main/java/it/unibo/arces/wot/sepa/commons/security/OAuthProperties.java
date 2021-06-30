@@ -23,6 +23,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.Base64;
 import java.util.Date;
@@ -100,6 +102,67 @@ public class OAuthProperties {
 	
 	public OAUTH_PROVIDER getProvider() {
 		return provider;
+	}
+	
+	public OAuthProperties(InputStream input,byte[] secret) throws SEPAPropertiesException {
+		InputStreamReader in = new InputStreamReader(input);
+		
+		jsap = new JsonParser().parse(in).getAsJsonObject();
+
+		try {
+		
+		if (secret != null) encryption = new Encryption(secret);
+
+		if (jsap.has("oauth")) {
+			oauthJsonObject = jsap.getAsJsonObject("oauth");
+
+			if (oauthJsonObject.has("enable")) enabled = oauthJsonObject.get("enable").getAsBoolean();
+			if (oauthJsonObject.has("loadTrustMaterial")) {
+				jks = oauthJsonObject.get("loadTrustMaterial").getAsJsonObject().get("jks").getAsString();
+				jksSecret = oauthJsonObject.get("loadTrustMaterial").getAsJsonObject().get("secret").getAsString();
+			}
+			if (oauthJsonObject.has("ssl")) ssl = oauthJsonObject.get("ssl").getAsString();
+
+			if (enabled) {
+				if (oauthJsonObject.has("provider")) {
+					String p = oauthJsonObject.get("provider").getAsString();
+					if (p.equals("keycloak")) provider = OAUTH_PROVIDER.KEYCLOAK;
+					else if (p.equals("sepa")) provider = OAUTH_PROVIDER.SEPA;
+					else throw new SEPASecurityException("Provider must have one of the following values: [sepa|keycloak]");	
+				}
+				
+				if (oauthJsonObject.has("authentication")) {
+					JsonObject auth = oauthJsonObject.getAsJsonObject("authentication");
+					
+					if (auth.has("endpoint"))
+						tokenRequestURL = auth.get("endpoint").getAsString();
+					if (auth.has("client_id"))
+						clientId = encryption.decrypt(auth.get("client_id").getAsString());
+					if (auth.has("client_secret"))
+						clientSecret = encryption.decrypt(auth.get("client_secret").getAsString());
+					if (auth.has("jwt"))
+						jwt = encryption.decrypt(auth.get("jwt").getAsString());
+					if (auth.has("expires"))
+						expires = Long.decode(encryption.decrypt(auth.get("expires").getAsString()));
+					if (auth.has("type"))
+						type = encryption.decrypt(auth.get("type").getAsString());	
+				}
+											
+				// Initial access token registration
+				if (oauthJsonObject.has("registration")) {
+					JsonObject reg = oauthJsonObject.getAsJsonObject("registration");
+					registrationURL = reg.get("endpoint").getAsString();
+					
+					initialAccessToken = (reg.has("initialAccessToken") ? reg.get("initialAccessToken").getAsString() : null);					
+					username = (reg.has("username") ? reg.get("username").getAsString() : null);
+					clientRegistrationId = (reg.has("client_id") ? reg.get("client_id").getAsString() : null);
+				}								
+			} 
+		} 
+		} catch(Exception e) {
+			logger.error(e.getMessage());
+			throw new SEPAPropertiesException(e.getMessage());
+		}
 	}
 	
 	public OAuthProperties(String jsapFileName, byte[] secret)
@@ -181,8 +244,13 @@ public class OAuthProperties {
 	public OAuthProperties(String jsap) throws SEPAPropertiesException, SEPASecurityException {
 		this(jsap, null);
 	}
+	
+	public OAuthProperties(InputStream jsap) throws SEPAPropertiesException, SEPASecurityException {
+		this(jsap, null);
+	}
 
 	public OAuthProperties() {}
+
 
 	public boolean isEnabled() {
 		return enabled;

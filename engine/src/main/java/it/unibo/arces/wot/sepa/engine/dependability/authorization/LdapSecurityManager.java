@@ -19,6 +19,7 @@ import org.apache.directory.api.ldap.model.exception.LdapException;
 import org.apache.directory.api.ldap.model.message.SearchScope;
 import org.apache.directory.api.ldap.model.password.PasswordUtil;
 import org.apache.directory.ldap.client.api.LdapNetworkConnection;
+import org.apache.logging.log4j.Level;
 
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.SignedJWT;
@@ -265,7 +266,7 @@ public class LdapSecurityManager extends SecurityManager {
 		bind();
 
 		try {
-			logger.debug("[LDAP] getEndpointCredentials Base DN: " + "uid=" + uid + ",ou=credentials," + prop.getBase());
+			logger.log(Level.getLevel("ldap"),"[LDAP] getEndpointCredentials Base DN: " + "uid=" + uid + ",ou=credentials," + prop.getBase());
 
 			cursor = ldap.search("uid=" + uid + ",ou=credentials," + prop.getBase(), "(objectclass=*)", SearchScope.OBJECT,
 					"*");
@@ -293,7 +294,7 @@ public class LdapSecurityManager extends SecurityManager {
 
 	@Override
 	public void addAuthorizedIdentity(DigitalIdentity identity) throws SEPASecurityException {
-		logger.debug("[LDAP] addIdentity uid=" + identity.getUid() + " class: " + identity.getObjectClass());
+		logger.log(Level.getLevel("ldap"),"[LDAP] addIdentity uid=" + identity.getUid() + " class: " + identity.getObjectClass());
 
 		bind();
 
@@ -321,7 +322,7 @@ public class LdapSecurityManager extends SecurityManager {
 
 	@Override
 	public void removeAuthorizedIdentity(String id) throws SEPASecurityException {
-		logger.debug("[LDAP] removeIdentity " + "uid=" + id + ",ou=authorizedIdentities," + prop.getBase());
+		logger.log(Level.getLevel("ldap"),"[LDAP] removeIdentity " + "uid=" + id + ",ou=authorizedIdentities," + prop.getBase());
 
 		bind();
 
@@ -341,7 +342,7 @@ public class LdapSecurityManager extends SecurityManager {
 
 	@Override
 	public boolean storeCredentials(DigitalIdentity identity, String client_secret) throws SEPASecurityException {
-		logger.debug("[LDAP] storeCredentials " + identity + " secret: " + client_secret);
+		logger.log(Level.getLevel("ldap"),"[LDAP] storeCredentials " + identity + " secret: " + client_secret);
 
 		byte[] password = PasswordUtil.createStoragePassword(client_secret.getBytes(),
 				LdapSecurityConstants.HASH_METHOD_SSHA);
@@ -388,7 +389,7 @@ public class LdapSecurityManager extends SecurityManager {
 
 	@Override
 	public boolean checkCredentials(String uid, String secret) throws SEPASecurityException {
-		logger.debug(
+		logger.log(Level.getLevel("ldap"),
 				"[LDAP] checkCredentials " + uid + " secret: " + secret + " uid=" + uid + ",ou=credentials," + prop.getBase(),
 				"(objectclass=*)");
 
@@ -412,7 +413,7 @@ public class LdapSecurityManager extends SecurityManager {
 
 	@Override
 	public void removeCredentials(DigitalIdentity identity) throws SEPASecurityException {
-		logger.debug("[LDAP] removeCredentials " + "uid=" + identity.getUid() + ",ou=credentials," + prop.getBase());
+		logger.log(Level.getLevel("ldap"),"[LDAP] removeCredentials " + "uid=" + identity.getUid() + ",ou=credentials," + prop.getBase());
 
 		bind();
 
@@ -428,7 +429,7 @@ public class LdapSecurityManager extends SecurityManager {
 
 	@Override
 	public void removeJwt(String uid) throws SEPASecurityException {
-		logger.debug("[LDAP] removeToken " + "uid=" + uid + ",ou=tokens," + prop.getBase());
+		logger.log(Level.getLevel("ldap"),"[LDAP] removeToken " + "uid=" + uid + ",ou=tokens," + prop.getBase());
 
 		bind();
 
@@ -444,7 +445,7 @@ public class LdapSecurityManager extends SecurityManager {
 
 	@Override
 	public boolean containsCredentials(String uid) throws SEPASecurityException {
-		logger.debug("[LDAP] containsCredentials " + "uid=" + uid + ",ou=credentials," + prop.getBase(), "(objectclass=*)");
+		logger.log(Level.getLevel("ldap"),"[LDAP] containsCredentials " + "uid=" + uid + ",ou=credentials," + prop.getBase(), "(objectclass=*)");
 
 		bind();
 
@@ -466,7 +467,7 @@ public class LdapSecurityManager extends SecurityManager {
 
 		try {
 			if (id == null) {
-				logger.debug("[LDAP] getTokenExpiringPeriod " + "uid=default,uid=expiring,ou=jwt," + prop.getBase(),
+				logger.log(Level.getLevel("ldap"),"[LDAP] getTokenExpiringPeriod " + "uid=default,uid=expiring,ou=jwt," + prop.getBase(),
 						"(objectclass=*)");
 
 				cursor = ldap.search("uid=default,uid=expiring,ou=jwt," + prop.getBase(), "(objectclass=*)",
@@ -476,13 +477,13 @@ public class LdapSecurityManager extends SecurityManager {
 
 			} else {
 				if (id.equals("SEPATest")) {
-					logger.debug("[LDAP] getTokenExpiringPeriod " + "uid=" + id + ",uid=expiring,ou=jwt," + prop.getBase(),
+					logger.log(Level.getLevel("ldap"),"[LDAP] getTokenExpiringPeriod " + "uid=" + id + ",uid=expiring,ou=jwt," + prop.getBase(),
 							"(objectclass=*)");
 
 					cursor = ldap.search("uid=" + id + ",uid=expiring,ou=jwt," + prop.getBase(), "(objectclass=*)",
 							SearchScope.OBJECT, "*");
 				} else {
-					logger.debug("[LDAP] getTokenExpiringPeriod " + "uid=" + id + ",ou=credentials," + prop.getBase(),
+					logger.log(Level.getLevel("ldap"),"[LDAP] getTokenExpiringPeriod " + "uid=" + id + ",ou=credentials," + prop.getBase(),
 							"(objectclass=*)");
 
 					cursor = ldap.search("uid=" + id + ",ou=credentials," + prop.getBase(), "(objectclass=*)",
@@ -541,7 +542,7 @@ public class LdapSecurityManager extends SecurityManager {
 
 	@Override
 	public void setTokenExpiringPeriod(String uid, long period) throws SEPASecurityException {
-		logger.debug("[LDAP] setTokenExpiringPeriod " + uid + " period: " + period + " uid=" + uid + ",ou=credentials,"
+		logger.log(Level.getLevel("ldap"),"[LDAP] setTokenExpiringPeriod " + uid + " period: " + period + " uid=" + uid + ",ou=credentials,"
 				+ prop.getBase());
 
 		bind();
@@ -566,7 +567,7 @@ public class LdapSecurityManager extends SecurityManager {
 
 	@Override
 	public String getIssuer() throws SEPASecurityException {
-		logger.debug("[LDAP] getIssuer " + "uid=issuer,ou=jwt," + prop.getBase(), "(objectclass=*)");
+		logger.log(Level.getLevel("ldap"),"[LDAP] getIssuer " + "uid=issuer,ou=jwt," + prop.getBase(), "(objectclass=*)");
 
 		bind();
 
@@ -588,7 +589,7 @@ public class LdapSecurityManager extends SecurityManager {
 
 	@Override
 	public void setIssuer(String issuer) throws SEPASecurityException {
-		logger.debug("[LDAP] setIssuer " + issuer + " uid=issuer,ou=jwt," + prop.getBase());
+		logger.log(Level.getLevel("ldap"),"[LDAP] setIssuer " + issuer + " uid=issuer,ou=jwt," + prop.getBase());
 
 		bind();
 
@@ -605,7 +606,7 @@ public class LdapSecurityManager extends SecurityManager {
 
 	@Override
 	public boolean isAuthorized(String uid) throws SEPASecurityException {
-		logger.debug("[LDAP] isAuthorized " + uid + " uid=" + uid + ",ou=authorizedIdentities," + prop.getBase(),
+		logger.log(Level.getLevel("ldap"),"[LDAP] isAuthorized " + uid + " uid=" + uid + ",ou=authorizedIdentities," + prop.getBase(),
 				"(objectclass=*)");
 
 		bind();
@@ -631,7 +632,7 @@ public class LdapSecurityManager extends SecurityManager {
 	 */
 	@Override
 	public boolean isForTesting(String uid) throws SEPASecurityException {
-		logger.debug("[LDAP] isForTesting " + uid + " uid=" + uid + ",ou=authorizedIdentities," + prop.getBase(),
+		logger.log(Level.getLevel("ldap"),"[LDAP] isForTesting " + uid + " uid=" + uid + ",ou=authorizedIdentities," + prop.getBase(),
 				"(objectclass=*)");
 
 		bind();
@@ -652,7 +653,7 @@ public class LdapSecurityManager extends SecurityManager {
 
 	@Override
 	public void addJwt(String uid, SignedJWT token) throws SEPASecurityException {
-		logger.debug("[LDAP] addToken " + uid + " uid=" + uid + ",ou=tokens," + prop.getBase(), "(objectclass=*)");
+		logger.log(Level.getLevel("ldap"),"[LDAP] addToken " + uid + " uid=" + uid + ",ou=tokens," + prop.getBase(), "(objectclass=*)");
 
 		bind();
 
@@ -678,7 +679,7 @@ public class LdapSecurityManager extends SecurityManager {
 
 	@Override
 	public boolean containsJwt(String uid) throws SEPASecurityException {
-		logger.debug("[LDAP] containsToken " + uid + " uid=" + uid + ",ou=tokens," + prop.getBase(), "(objectclass=*)");
+		logger.log(Level.getLevel("ldap"),"[LDAP] containsToken " + uid + " uid=" + uid + ",ou=tokens," + prop.getBase(), "(objectclass=*)");
 
 		bind();
 
@@ -695,7 +696,7 @@ public class LdapSecurityManager extends SecurityManager {
 
 	@Override
 	public Date getTokenExpiringDate(String uid) throws SEPASecurityException {
-		logger.debug("[LDAP] getTokenExpiringDate " + uid + " uid=" + uid + ",ou=tokens," + prop.getBase(),
+		logger.log(Level.getLevel("ldap"),"[LDAP] getTokenExpiringDate " + uid + " uid=" + uid + ",ou=tokens," + prop.getBase(),
 				"(objectclass=*)");
 
 		bind();
@@ -716,7 +717,7 @@ public class LdapSecurityManager extends SecurityManager {
 
 	@Override
 	public SignedJWT getJwt(String uid) throws SEPASecurityException {
-		logger.debug("[LDAP] getToken " + uid + " uid=" + uid + ",ou=tokens," + prop.getBase(), "(objectclass=*)");
+		logger.log(Level.getLevel("ldap"),"[LDAP] getToken " + uid + " uid=" + uid + ",ou=tokens," + prop.getBase(), "(objectclass=*)");
 
 		bind();
 
@@ -735,7 +736,7 @@ public class LdapSecurityManager extends SecurityManager {
 
 	@Override
 	public DigitalIdentity getIdentity(String uid) throws SEPASecurityException {
-		logger.debug("[LDAP] getIdentity " + uid + " uid=" + uid + ",ou=authorizedIdentities," + prop.getBase(),
+		logger.log(Level.getLevel("ldap"),"[LDAP] getIdentity " + uid + " uid=" + uid + ",ou=authorizedIdentities," + prop.getBase(),
 				"(objectclass=*)");
 
 		bind();
@@ -768,7 +769,7 @@ public class LdapSecurityManager extends SecurityManager {
 
 	@Override
 	public void setDeviceExpiringPeriod(long period) throws SEPASecurityException {
-		logger.debug("[LDAP] setDeviceExpiringPeriod " + period + " uid=device,uid=expiring,ou=jwt," + prop.getBase());
+		logger.log(Level.getLevel("ldap"),"[LDAP] setDeviceExpiringPeriod " + period + " uid=device,uid=expiring,ou=jwt," + prop.getBase());
 
 		bind();
 
@@ -786,7 +787,7 @@ public class LdapSecurityManager extends SecurityManager {
 
 	@Override
 	public long getDeviceExpiringPeriod() throws SEPASecurityException {
-		logger.debug("[LDAP] getDeviceExpiringPeriod " + "uid=device,uid=expiring,ou=jwt," + prop.getBase(),
+		logger.log(Level.getLevel("ldap"),"[LDAP] getDeviceExpiringPeriod " + "uid=device,uid=expiring,ou=jwt," + prop.getBase(),
 				"(objectclass=*)");
 
 		bind();
@@ -811,7 +812,7 @@ public class LdapSecurityManager extends SecurityManager {
 
 	@Override
 	public void setApplicationExpiringPeriod(long period) throws SEPASecurityException {
-		logger.debug(
+		logger.log(Level.getLevel("ldap"),
 				"[LDAP] setApplicationExpiringPeriod " + period + " uid=application,uid=expiring,ou=jwt," + prop.getBase());
 
 		bind();
@@ -829,7 +830,7 @@ public class LdapSecurityManager extends SecurityManager {
 
 	@Override
 	public long getApplicationExpiringPeriod() throws SEPASecurityException {
-		logger.debug("[LDAP] getApplicationExpiringPeriod " + "uid=application,uid=expiring,ou=jwt," + prop.getBase());
+		logger.log(Level.getLevel("ldap"),"[LDAP] getApplicationExpiringPeriod " + "uid=application,uid=expiring,ou=jwt," + prop.getBase());
 
 		bind();
 
@@ -853,7 +854,7 @@ public class LdapSecurityManager extends SecurityManager {
 
 	@Override
 	public void setUserExpiringPeriod(long period) throws SEPASecurityException {
-		logger.debug("[LDAP] setUserExpiringPeriod " + period + " uid=user,uid=expiring,ou=jwt," + prop.getBase());
+		logger.log(Level.getLevel("ldap"),"[LDAP] setUserExpiringPeriod " + period + " uid=user,uid=expiring,ou=jwt," + prop.getBase());
 
 		bind();
 
@@ -871,7 +872,7 @@ public class LdapSecurityManager extends SecurityManager {
 
 	@Override
 	public long getUserExpiringPeriod() throws SEPASecurityException {
-		logger.debug("[LDAP] getUserExpiringPeriod " + "uid=user,uid=expiring,ou=jwt," + prop.getBase(), "(objectclass=*)");
+		logger.log(Level.getLevel("ldap"),"[LDAP] getUserExpiringPeriod " + "uid=user,uid=expiring,ou=jwt," + prop.getBase(), "(objectclass=*)");
 
 		bind();
 
@@ -895,7 +896,7 @@ public class LdapSecurityManager extends SecurityManager {
 
 	@Override
 	public void setDefaultExpiringPeriod(long period) throws SEPASecurityException {
-		logger.debug("[LDAP] setDefaultExpiringPeriod " + period + " uid=default,uid=expiring,ou=jwt," + prop.getBase());
+		logger.log(Level.getLevel("ldap"),"[LDAP] setDefaultExpiringPeriod " + period + " uid=default,uid=expiring,ou=jwt," + prop.getBase());
 
 		bind();
 
@@ -912,7 +913,7 @@ public class LdapSecurityManager extends SecurityManager {
 
 	@Override
 	public long getDefaultExpiringPeriod() throws SEPASecurityException {
-		logger.debug("[LDAP] getDefaultExpiringPeriod " + "uid=default,uid=expiring,ou=jwt," + prop.getBase(),
+		logger.log(Level.getLevel("ldap"),"[LDAP] getDefaultExpiringPeriod " + "uid=default,uid=expiring,ou=jwt," + prop.getBase(),
 				"(objectclass=*)");
 
 		bind();
